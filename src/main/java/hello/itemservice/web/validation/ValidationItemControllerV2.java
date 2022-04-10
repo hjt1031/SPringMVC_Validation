@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -44,35 +47,34 @@ public class ValidationItemControllerV2 {
 
     // 저장
     @PostMapping("/add")
-    public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes, Model model) {
-
+    public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        // bindingResult : item 의 바인딩 된 결과를 bindingResult 에 넣는다.(오류가 생겼을 시에만 & erros 역할을 해준다.) , 자동으로 view 에 넘어간다.
         //검증 오류 결과 보관
-        Map<String, String> erros = new HashMap<>();
+        //Map<String, String> erros = new HashMap<>();
 
         //검증 로직
         if(!StringUtils.hasText(item.getItemName())){
-            //글자가 없으면
-            erros.put("itemName","상품 이름은 필수입니다.");
+            //필드가 에러라서 FieldError
+            bindingResult.addError(new FieldError("item", "itemName", "상품 이름은 필 수 입니다."));
         }
         if(item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
-            erros.put("price", "가격은 1,000 ~ 1,000,000 까지 허용합니다");
+            bindingResult.addError(new FieldError("item", "price", "가격은 1,000 ~ 1,000,000 까지 허용합니다"));
         }
         if(item.getQuantity() == null || item.getQuantity() > 9999) {
-            erros.put("quantity", "수량은 최대 9.999 까지 허용합니다.");
+            bindingResult.addError(new FieldError("item", "quantity", "수량은 최대 9.999 까지 허용합니다."));
         }
 
         // 특정 필드가 아닌 복합 룰 검증
         if(item.getPrice() != null && item.getQuantity() != null) {
             int resultPrice = item.getPrice() * item.getQuantity();
             if(resultPrice < 10000) {
-                erros.put("globalError", "가격 * 수량의 합은 10,000원 이상이여야 합니다. 현재 값 = " + resultPrice);
+                bindingResult.addError(new ObjectError("item","가격 * 수량의 합은 10,000원 이상이여야 합니다. 현재 값 = " + resultPrice));
             }
         }
 
-        //검증에 실패하면 다시 입력 폼으로
-        if(!erros.isEmpty()) {
-            log.info("errors = {}", erros);
-            model.addAttribute("errors", erros);
+        //검증에 실패하면 다시 입력 폼으로 ( hasErrors : bindingResult가 에러가 있으면 자동실행)
+        if(bindingResult.hasErrors()) {
+            log.info("errors = {}", bindingResult);
             return "validation/v2/addForm";
         }
 

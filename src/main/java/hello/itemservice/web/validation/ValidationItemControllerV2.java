@@ -92,13 +92,13 @@ public class ValidationItemControllerV2 {
         //검증 로직
         if(!StringUtils.hasText(item.getItemName())){
             // FieldError는 두가지의 생성자를 제공한다. (필드의 값 을 에러가 나도 유지시키기 위해서 사용)
-            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, null, null, "상품 이름은 필 수 입니다."));
+            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, new String[]{"required.item.itemName"}, null, "상품 이름은 필 수 입니다."));
         }
         if(item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
-            bindingResult.addError(new FieldError("item", "price", item.getPrice(), false, null, null, "가격은 1,000 ~ 1,000,000 까지 허용합니다"));
+            bindingResult.addError(new FieldError("item", "price", item.getPrice(), false, new String[]{"range.item.price"}, new Object[]{1000,10000}, null));
         }
         if(item.getQuantity() == null || item.getQuantity() > 9999) {
-            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(), false, null, null, "수량은 최대 9.999 까지 허용합니다."));
+            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(), false, new String[]{"max.item.quantity"}, new Object[]{9999}, null));
 
         }
 
@@ -106,7 +106,7 @@ public class ValidationItemControllerV2 {
         if(item.getPrice() != null && item.getQuantity() != null) {
             int resultPrice = item.getPrice() * item.getQuantity();
             if(resultPrice < 10000) {
-                bindingResult.addError(new ObjectError("item", null, null,"가격 * 수량의 합은 10,000원 이상이여야 합니다. 현재 값 = " + resultPrice));
+                bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMi"}, new Object[]{10000,resultPrice},null));
             }
         }
 

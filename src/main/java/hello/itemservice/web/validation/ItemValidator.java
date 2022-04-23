@@ -31,7 +31,7 @@ public class ItemValidator implements Validator {
         if(item.getQuantity() == null || item.getQuantity() > 9999) {
             errors.rejectValue("quantity","max", new Object[]{9999}, null);
         }
-
+        // 특정 피르닥 아닌 복합 롤 검증
         if(item.getPrice() != null && item.getQuantity() != null) {
             int resultPrice = item.getPrice() * item.getQuantity();
             if(resultPrice < 10000) {
